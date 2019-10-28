@@ -110,9 +110,9 @@ else
 	
 	// @name Databse Connection 
 	// @abstract  connected with database. and without showing any error ... 
-	$link = @mysql_connect($server, $dbuser, $dbpass);
+	$link = mysqli_connect($server, $dbuser, $dbpass, $dbname);
 	if (!$link) {  session_destroy(); header("Refresh:0;url=http://".$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'].'?error_message=Username OR password Missmatch');}
-	if(!@mysql_select_db($dbname, $link)){ session_destroy(); header("Refresh:0;url=http://".$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'].'?error_message=Database Not found');};
+	// if(!@mysql_select_db($dbname, $link)){ session_destroy(); header("Refresh:0;url=http://".$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'].'?error_message=Database Not found');};
 	///@endof Databse Connection  
 	
 	html_header();	 //  @link  html_head will printed here!! 
@@ -136,7 +136,7 @@ else
 	 // @abstract for each Search Text we seach in the database
 	{	
 
-		$search_text = mysql_real_escape_string($_POST['search_text']);
+		$search_text = mysqli_real_escape_string($link,$_POST['search_text']);
 		$result_in_tables = 0;
 		
 		echo '<a href="javascript:hide_all()">Collapse All Result</a> 
@@ -145,7 +145,7 @@ else
 		
 		// @abstract  table count in the database
 		$sql= 'show tables';
-		$res = mysql_query($sql);
+		$res = mysqli_query($link,$sql);
 		//@abstract  get all table information in row tables
 		$tables = fetch_array($res);
                 
@@ -160,14 +160,14 @@ else
 	   {
 			//@abstract querry bliding of each table
 			$sql = 'select count(*) from '.$tables[$i]['Tables_in_'.$dbname];
-			$res = mysql_query($sql);
+			$res = mysqli_query($link,$sql);
 			
-			if(mysql_num_rows($res)>0)
+			if(mysqli_num_rows($res)>0)
 			//@abstract Buliding search Querry, search
 			{
 				//@abstract taking the table data type information
 				$sql = 'desc '.$tables[$i]['Tables_in_'.$dbname]; 
-				$res = mysql_query($sql);
+				$res = mysqli_query($link,$sql);
 				$collum = fetch_array($res);
 				
 				$search_sql = 'select * from '.$tables[$i]['Tables_in_'.$dbname].' where ';
@@ -195,7 +195,7 @@ else
 				if($no_varchar_field>0)
 				// @abstract only main searching part showing the data
 				{
-					$res = mysql_query($search_sql);
+					$res = mysqli_query($link,$search_sql);
 					$search_result = fetch_array($res);
 					if(sizeof($search_result))
 					// @abstract found search data showing it! 
@@ -204,7 +204,7 @@ else
 						
 						echo '<div class="table_name">&nbsp;&nbsp; Table :<input type="text" style="width:400px;" value="' . $tables[$i]['Tables_in_'.$dbname].'"/> &nbsp;&nbsp;</div> 
 							  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.
-							'<span class="number_result"> Total Results for <i>"'.$search_text .'"</i>: '.mysql_affected_rows().'</span>
+							'<span class="number_result"> Total Results for <i>"'.$search_text .'"</i>: '.mysqli_affected_rows($link).'</span>
 							<br/>
 							<div class="link_wrapper"><a href="javascript:toggle(\''.$tables[$i]['Tables_in_'.$dbname].'_sql'.'\')">SQL</a></div>
 							<div id="'.$tables[$i]['Tables_in_'.$dbname].'_sql" class="sql keys"><i>'.$search_sql.'</i	></div>
@@ -242,7 +242,7 @@ else
 					'</i> is not found in this Database ('.$dbname.') !</p>';
 	   }
 
-	mysql_close($link); 
+	mysqli_close($link); 
 	}
 }// @endof Else  
 
@@ -253,7 +253,7 @@ else
 <span  class="me">"AnyWhereInDB" is a Open Source Project, developed by <a href="http://twitter.com/happy56">Nafis Ahmad</a>. 
 <br /> 
 <a href="http://code.google.com/p/anywhereindb">http://code.google.com/p/anywhereindb </a>
-</span>
+and Updated to Mysqli by Lisandro Arciles  </span>
 </body>
 </html>
 <?php
@@ -269,7 +269,7 @@ function fetch_array($res)
 // @return  array  
 {
 	   $data = array();	
-	while ($row = mysql_fetch_assoc($res)) 
+	while ($row = mysqli_fetch_assoc($res)) 
 	{
 		$data[] = $row;
 	}
